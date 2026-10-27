@@ -469,10 +469,30 @@ const DEFAULTS={
   supervisorWord:'دخولك لمنصة مدرستي وحل واجباتك خطوة نحو تميزك، وكل مشاركة وتفاعل يعكس حرصكن على التفوق وتحقيق الطموحات.',
 };
 const mk=(name,pct)=>({id:Math.random().toString(36).slice(2,10),name:String(name).trim(),pct:Math.min(100,Math.max(0,pct))});
-let state={settings:{...DEFAULTS},students:[],hearts:{},reacts:{},wheel:{day:'',used:0}};
+/* students at 90% or more, from the exported Madrasati homework report */
+const ROSTER_VER='1448-05';  // change when the list is replaced, so copies saved in browsers refresh
+const ROSTER=[
+  ['غيداء احمد الزهراني',100],['لتين محمد جابر',98],['كيان منير باخريصه',97.9],['دانة تركي الشهراني',97.5],
+  ['ميلا زياد الغامدي',97.1],['افراح ماجد الجهني',96.8],['ليان رشدان العصيمي',96.8],['لبنى محمد كادو',95.7],
+  ['حور فهد العوبثاني',95.5],['اليانا أحمد المالكي',95.2],['ميرا زياد الغامدي',95.2],['ود عبدالله الجهني',95.2],
+  ['لمى محمد الشمراني',95.1],['ريم كريم البلادي',95],['سميه كامل المغربي',95],['يارا موسى الربعي',94.9],
+  ['ريفان رائد بن محي الدين السليماني',94.8],['اليانا بندر الغامدي',94.7],['ديم منصور الزهراني',94.7],['مياس حامد العبدلي',94.6],
+  ['دانة احمد ابوزيدان',94.4],['ليان سلطان النزاوي',94.4],['ميرا تركى العمودى',94.4],['ديم محمد بن حويل',94.2],
+  ['ليندا محمد حدايدي',94],['يارا صقر الزبالي',94],['ملك علي الشمراني',93.8],['همس احمد شامي',93.8],
+  ['مشاعل ماجد الزهراني',93.7],['روز فهد الصومالي',93.5],['ايلان سامي شريف',93.3],['رود محمد راجحي',93.3],
+  ['لينا اصيل بحرق',93.2],['وجدان سعيد باسعيد',93.2],['رويدا يوسف السلمي',93],['لمى محمد الشهري',93],
+  ['ميلاف عابد المالكي',93],['ترف محمد الزبالي',92.8],['تالا فيصل باريان',92.7],['دانه مجدي الحازمي',92.5],
+  ['يارا سعود العتيبي',92.2],['رياحين احمد العبدلي',91.9],['حور سعيد العنيني',91.7],['رنا محمد الغامدي',91.7],
+  ['حور احمد هتان',91.6],['مريم خالد باروم',91.6],['ريم محمد السبيعي',91.4],['ورد عبدالهادي عسيري',91.3],
+  ['نوره ياسر المطيري',91.1],['رفيف سامي امام',90.9],['حور عبدالله الزهراني',90.8],['اية احمد باشماخ',90.7],
+  ['سيلا عماد الدين باوارث',90.5],['لارين محمد الزهراني',90.4],['ريما عامر الزبيدي',90.3],['سماهر احمد برقاوي',90.3],
+  ['ياسمين بنت عطية بنت الزهراني',90.3],['جود نواف الدهاسي',90],['سبين هاني بن محفوظ',90]
+];
+const rosterStudents=()=>ROSTER.map(r=>mk(...r));
+let state={settings:{...DEFAULTS},students:[],rosterVer:'',hearts:{},reacts:{},wheel:{day:'',used:0}};
 try{const s=JSON.parse(localStorage.getItem('takreem-v2'));if(s&&Array.isArray(s.students))state={...state,...s,settings:{...DEFAULTS,...s.settings}}
   else{const old=JSON.parse(localStorage.getItem('honor-v1'));if(old&&!old.isSample&&old.students?.length)state.students=old.students.map(x=>mk(x.name,x.pct))}}catch(e){}
-if(state.isSample){state.students=[];state.hearts={}}  // earlier versions opened with example names; drop them
+if(state.rosterVer!==ROSTER_VER){state.students=rosterStudents();state.hearts={};state.rosterVer=ROSTER_VER}  // a newer published list replaces any saved copy
 delete state.isSample;
 if(state.settings.supervisor==='أ. منى بنت أحمد الحربي')state.settings.supervisor=DEFAULTS.supervisor;  // earlier placeholder names
 if(state.settings.school==='متوسطة النور للبنات')state.settings.school=DEFAULTS.school;
