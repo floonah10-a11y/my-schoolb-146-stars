@@ -174,7 +174,7 @@ section{margin-top:44px}
 .wheel-box{display:grid;justify-items:center;gap:12px}
 .wheel-wrap{position:relative;width:min(340px,86vw);aspect-ratio:1;max-width:100%}
 .pointer{position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:0;height:0;border-inline:16px solid transparent;border-top:26px solid var(--rose);z-index:2;filter:drop-shadow(0 3px 2px rgba(0,0,0,.2))}
-.wheel{width:100%;height:100%;border-radius:50%;border:10px solid var(--gold);box-shadow:0 0 0 4px #fff,0 18px 34px -16px rgba(0,0,0,.4);transition:transform 4.2s cubic-bezier(.17,.67,.12,1);position:relative}
+.wheel{width:100%;height:100%;border-radius:50%;border:10px solid var(--gold);box-shadow:0 0 0 4px #fff,0 18px 34px -16px rgba(0,0,0,.4);position:relative}
 .wheel .lbl{position:absolute;transform:translate(-50%,-50%);font-family:var(--f-display);font-weight:700;font-size:clamp(12px,3.6vw,15px);color:#fff;text-align:center;white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,.3);line-height:1.3}
 .hub{position:absolute;inset:36%;border-radius:50%;background:var(--teal-dk);color:#fff;border:5px solid #fff;font-family:var(--f-display);font-size:22px;font-weight:700;display:grid;place-items:center;z-index:2;transition:transform .2s}
 .hub:hover{transform:scale(1.06)}
@@ -724,16 +724,21 @@ function buildWheel(){
     return `<span class="lbl" style="left:${50+34*Math.sin(a)}%;top:${50-34*Math.cos(a)}%">${esc(p[0]).replace(' ','<br>')}</span>`}).join('');
 }
 buildWheel();
-const today=()=>new Date().toISOString().slice(0,10);
-function renderWheelInfo(){if(state.wheel.day!==today())state.wheel={day:today(),used:0};
-  const left=3-state.wheel.used;$('spinsLeft').textContent=left>0?`لكِ ${N(left)} ${left===1?'دورة':'دورات'} اليوم`:'انتهت دوراتك لليوم، عودي غدًا';$('spin').disabled=left<=0}
+function renderWheelInfo(){$('spinsLeft').textContent='اضغطي «دوّري» واكتشفي مفاجأتك'}
+/* spun from script, so it turns even where the device asks for reduced motion and CSS transitions are off */
+let spinning=false;
 $('spin').addEventListener('click',()=>{
-  renderWheelInfo();if(state.wheel.used>=3)return;
-  const k=Math.floor(Math.random()*PRIZES.length);
-  rot+=360*5+((360-(k*seg+seg/2))-(rot%360)+360)%360;
-  $('wheel').style.transform=`rotate(${rot}deg)`;$('spin').disabled=true;
-  let n=0;const tk=setInterval(()=>{tick();if(++n>22)clearInterval(tk)},170);
-  setTimeout(()=>{state.wheel.used++;save();renderWheelInfo();toast(PRIZES[k][2],'star');if(!PRIZES[k][0].includes('حظ')){confetti(90);applause(2,.8);cheer(1.5)}},4300);
+  if(spinning)return;spinning=true;$('spin').disabled=true;
+  const k=Math.floor(Math.random()*PRIZES.length),from=rot,to=rot+360*5+((360-(k*seg+seg/2))-(rot%360)+360)%360,t0=performance.now(),dur=4200;
+  let lastSlice=Math.floor(from/seg);
+  (function step(now){
+    const p=Math.min(1,(now-t0)/dur);rot=from+(to-from)*(1-Math.pow(1-p,4));
+    $('wheel').style.transform=`rotate(${rot}deg)`;
+    const slice=Math.floor(rot/seg);if(slice!==lastSlice){lastSlice=slice;tick()}
+    if(p<1)return requestAnimationFrame(step);
+    rot=to;spinning=false;$('spin').disabled=false;
+    toast(PRIZES[k][2],'star');if(!PRIZES[k][0].includes('حظ')){confetti(90);applause(2,.8);cheer(1.5)}
+  })(t0);
 });
 
 /* ---------- control panel ---------- */
