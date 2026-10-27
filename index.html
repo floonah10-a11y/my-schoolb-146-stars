@@ -405,7 +405,7 @@ footer .rights{font-family:var(--f-display);font-size:15px;font-weight:600;color
 
   <footer>
     <div class="rights">© <span id="year" class="num"></span> جميع الحقوق محفوظة · هدى العتيبي</div>
-    <div>تُحفظ البيانات في هذا المتصفح فقط · الأسماء الظاهرة عند أول فتح أمثلة توضيحية</div>
+    <div>تُحفظ البيانات في هذا المتصفح فقط</div>
   </footer>
 </main>
 
@@ -468,14 +468,12 @@ const DEFAULTS={
   viceWord:'دمتُنَّ نجماتٍ مضيئات في سماء مدرستنا، ودام تميزكن مصدر فخر واعتزاز.',
   supervisorWord:'دخولك لمنصة مدرستي وحل واجباتك خطوة نحو تميزك، وكل مشاركة وتفاعل يعكس حرصكن على التفوق وتحقيق الطموحات.',
 };
-const SAMPLE=[['نورة عبدالله القحطاني',100],['ريم سعد الشهري',100],['لمى خالد العتيبي',99],['شهد ناصر الغامدي',98.5],['رغد فهد الحربي',98],
-  ['ليان ماجد الدوسري',97],['سارة علي المطيري',96.5],['هيا تركي الزهراني',96],['دانة بندر السبيعي',95],['وعد سلطان الشمري',94],
-  ['أريج حمد العنزي',93.5],['جنى صالح البقمي',93],['مها عمر الأحمدي',92],['ترف يوسف القرني',91],['جود نايف الرشيدي',90],
-  ['ملاك راشد الجهني',87],['غلا سامي البلوي',82]];
 const mk=(name,pct)=>({id:Math.random().toString(36).slice(2,10),name:String(name).trim(),pct:Math.min(100,Math.max(0,pct))});
-let state={settings:{...DEFAULTS},students:SAMPLE.map(r=>mk(...r)),isSample:true,hearts:{},reacts:{},wheel:{day:'',used:0}};
+let state={settings:{...DEFAULTS},students:[],hearts:{},reacts:{},wheel:{day:'',used:0}};
 try{const s=JSON.parse(localStorage.getItem('takreem-v2'));if(s&&Array.isArray(s.students))state={...state,...s,settings:{...DEFAULTS,...s.settings}}
-  else{const old=JSON.parse(localStorage.getItem('honor-v1'));if(old&&!old.isSample&&old.students?.length){state.students=old.students.map(x=>mk(x.name,x.pct));state.isSample=false}}}catch(e){}
+  else{const old=JSON.parse(localStorage.getItem('honor-v1'));if(old&&!old.isSample&&old.students?.length)state.students=old.students.map(x=>mk(x.name,x.pct))}}catch(e){}
+if(state.isSample){state.students=[];state.hearts={}}  // earlier versions opened with example names; drop them
+delete state.isSample;
 if(state.settings.supervisor==='أ. منى بنت أحمد الحربي')state.settings.supervisor=DEFAULTS.supervisor;  // earlier placeholder names
 if(state.settings.school==='متوسطة النور للبنات')state.settings.school=DEFAULTS.school;
 if(state.settings.principal==='أ. هند بنت سعد العتيبي')state.settings.principal=DEFAULTS.principal;
@@ -547,7 +545,6 @@ function freeParse(txt){
 }
 function merge(list){
   if(!list.length)return toast('لم يُعثر على أسماء ونسب. اكتبي كل طالبة في سطر: الاسم ثم النسبة.','x'),false;
-  if(state.isSample){state.students=[];state.isSample=false;state.hearts={}}
   let added=0,updated=0;
   for(const s of list){const ex=state.students.find(x=>x.name===s.name);if(ex){ex.pct=s.pct;updated++}else{state.students.push(s);added++}}
   save();shown=0;clearTimeout(revealTimer);renderAll();
@@ -747,7 +744,7 @@ let arm;$('clearAll').addEventListener('click',e=>{const b=e.currentTarget;
   if(!b.classList.contains('armed')){b.classList.add('armed');b.innerHTML=ic('trash')+' اضغطي مرة أخرى للتأكيد';clearTimeout(arm);
     arm=setTimeout(()=>{b.classList.remove('armed');b.innerHTML=ic('trash')+' مسح كل الطالبات'},3500);return}
   clearTimeout(arm);b.classList.remove('armed');b.innerHTML=ic('trash')+' مسح كل الطالبات';
-  state.students=[];state.isSample=false;state.hearts={};save();shown=0;clearTimeout(revealTimer);renderAll();toast('مُسحت جميع الطالبات','trash')});
+  state.students=[];state.hearts={};save();shown=0;clearTimeout(revealTimer);renderAll();toast('مُسحت جميع الطالبات','trash')});
 
 /* ---------- toast ---------- */
 let tt;function toast(msg,icn='check'){const el=$('toast');el.innerHTML=ic(icn)+esc(msg);el.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('show'),3200)}
