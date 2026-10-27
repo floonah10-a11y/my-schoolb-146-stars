@@ -1,0 +1,741 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>لوحة تكريم المنضبطات</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>document.documentElement.dir='rtl';document.documentElement.lang='ar';</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=El+Messiri:wght@500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Aref+Ruqaa:wght@400;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+/* Layout: celebration-hall single theme — mint hall, gold stage, teal ribbons.
+   hero (school + leaders + drawn trophy) → covered podium reveal → leaders' words → honor cards → star wheel → teacher's control panel */
+:root{
+  --bg:#EEF6FC; --paper:#FFFFFF; --cream:#FFF7E4; --cream-2:#FCEBC2;
+  --ink:#12324A; --muted:#5B7085; --line:#D5E6F3;
+  --teal:#1784C9; --teal-dk:#0B4F7A; --teal-lt:#D8EEFB;
+  --gold:#E2A626; --gold-dk:#A8740B; --gold-lt:#FDE9B4;
+  --silver:#9AA8B1; --bronze:#C77A45; --rose:#E0607A; --violet:#7C6BD6;
+  --f-display:"El Messiri","IBM Plex Sans Arabic",Tahoma,sans-serif;
+  --f-body:"IBM Plex Sans Arabic",Tahoma,"Segoe UI",sans-serif;
+  --f-hand:"Aref Ruqaa","El Messiri",serif;
+  --r:20px; color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.75;margin:0;
+  background-image:radial-gradient(circle at 12% 8%,#fff 0,transparent 32%),radial-gradient(circle at 90% 40%,#E0F0FB 0,transparent 30%)}
+input,select,button,textarea,table{font:inherit;color:inherit}
+button{cursor:pointer}
+h1,h2,h3{font-family:var(--f-display);margin:0;line-height:1.3;text-wrap:balance}
+.wrap{max-width:1100px;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.num{font-variant-numeric:tabular-nums}
+svg.ic{width:1.15em;height:1.15em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none;transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px;border-radius:10px}
+section{margin-top:44px}
+.sec-t{text-align:center;font-size:clamp(24px,3.6vw,32px);color:var(--teal-dk);margin-bottom:6px;display:flex;justify-content:center;align-items:center;gap:10px}
+.sec-s{text-align:center;color:var(--muted);margin:0 0 18px;font-size:14px}
+
+/* ===== ribbon ===== */
+.ribbon{background:var(--teal-dk);color:#E3F2FC;font-size:13.5px}
+.ribbon .wrap{display:flex;gap:12px;align-items:center;justify-content:space-between;padding-block:8px;flex-wrap:wrap}
+.ribbon b{color:var(--gold-lt)}
+.chip-btn{display:inline-flex;align-items:center;gap:6px;background:var(--gold);color:#2B1C00;border:0;border-radius:99px;padding:5px 14px;font-weight:700;font-size:13px;transition:transform .2s}
+.chip-btn:hover{transform:translateY(-2px)}
+.chip-btn:hover .ic{transform:rotate(90deg)}
+
+/* ===== hero ===== */
+.hero{margin-top:18px;border-radius:32px;overflow:hidden;position:relative;display:grid;grid-template-columns:1.15fr .85fr;align-items:center;color:#fff;
+  background:linear-gradient(135deg,#0B4A75 0%,#1577B8 40%,#38AEE6 100%);padding-bottom:46px;box-shadow:0 30px 60px -30px rgba(11,74,117,.7)}
+.hero-bg{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 18% 30%,rgba(246,200,88,.35) 0,transparent 38%),radial-gradient(circle at 85% 90%,rgba(224,96,122,.25) 0,transparent 35%),
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.08' stroke-width='1.3'%3E%3Cpath d='M36 10l7.5 18.5L62 36l-18.5 7.5L36 62l-7.5-18.5L10 36l18.5-7.5z'/%3E%3Crect x='23' y='23' width='26' height='26' transform='rotate(45 36 36)'/%3E%3C/g%3E%3C/svg%3E")}
+.hero-txt{padding:38px 40px 10px;display:grid;gap:16px;justify-items:start;position:relative;z-index:1;min-width:0}
+.school-ribbon{display:inline-flex;align-items:center;gap:10px;background:linear-gradient(90deg,#F6C858,#E2A626);color:#2B1C00;font-weight:700;font-size:clamp(14px,1.8vw,17px);
+  padding:8px 26px;clip-path:polygon(0 0,100% 0,96% 50%,100% 100%,0 100%,4% 50%);animation:slideIn .8s cubic-bezier(.2,.9,.3,1.2) both}
+.hero h1{font-size:clamp(34px,5.8vw,60px);line-height:1.25;background:linear-gradient(180deg,#FFFDF2 0%,#FBE3A0 55%,#F2B940 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 4px 10px rgba(0,0,0,.25));animation:slideIn .8s .1s cubic-bezier(.2,.9,.3,1.2) both}
+.h-sub{margin:0;color:#DDF1FD;font-size:16px;max-width:46ch;animation:slideIn .8s .2s both}
+.h-sub b{color:#FBE3A0}
+@keyframes slideIn{from{transform:translateX(-30px);opacity:0}}
+.coord{display:inline-flex;align-items:center;gap:12px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:8px 8px 8px 22px;
+  backdrop-filter:blur(6px);animation:slideIn .8s .3s both;transition:transform .3s}
+.coord:hover{transform:translateY(-3px)}
+.coords{display:flex;flex-wrap:wrap;gap:10px}
+.coords .coord:nth-child(2){animation-delay:.38s}.coords .coord:nth-child(3){animation-delay:.46s}
+@media (max-width:820px){.coords{justify-content:center}}
+.coord .av{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,#F6C858,#E2A626);color:#2B1C00;display:grid;place-items:center;font-size:22px}
+.coord:hover .av .ic{transform:rotate(-12deg) scale(1.15)}
+.coord small{display:block;font-size:12.5px;color:#C4E4F8}
+.coord b{font-family:var(--f-display);font-size:19px}
+.hero-art{position:relative;height:100%;min-height:340px;display:grid;place-items:center;z-index:1}
+.rays{position:absolute;width:520px;aspect-ratio:1;max-width:140%;border-radius:50%;
+  background:repeating-conic-gradient(rgba(251,227,160,.22) 0 9deg,transparent 9deg 18deg);
+  -webkit-mask:radial-gradient(circle,#000 0,transparent 65%);mask:radial-gradient(circle,#000 0,transparent 65%);animation:spin 50s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hero-art svg.trophy{width:min(240px,70%);height:auto;position:relative;filter:drop-shadow(0 20px 26px rgba(0,0,0,.35));animation:float 5s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-12px)}}
+.fl{position:absolute;width:50px;height:50px;border-radius:16px;background:#fff;display:grid;place-items:center;font-size:24px;box-shadow:0 12px 22px -10px rgba(0,0,0,.45);animation:bob 4s ease-in-out infinite}
+.fl:nth-of-type(2){animation-delay:-1s}.fl:nth-of-type(3){animation-delay:-2s}.fl:nth-of-type(4){animation-delay:-3s}
+@keyframes bob{50%{transform:translateY(-10px) rotate(8deg)}}
+.spark{position:absolute;color:#F6C858;animation:tw 2.6s ease-in-out infinite}
+.spark svg{width:100%;height:100%;fill:currentColor}
+@keyframes tw{0%,100%{transform:scale(.6) rotate(0);opacity:.5}50%{transform:scale(1) rotate(25deg);opacity:1}}
+.wave{position:absolute;bottom:-1px;left:0;width:100%;height:46px;display:block}
+
+/* ===== stage / podium ===== */
+.stage{position:relative;border-radius:28px;overflow:hidden;border:1px solid var(--cream-2);
+  background:radial-gradient(ellipse at 50% 0%,#FFF3CF 0,var(--cream) 45%,#F7E2B5 100%);padding:22px 18px 0}
+.stage::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:conic-gradient(from 180deg at 50% -10%,transparent 0 160deg,rgba(255,255,255,.55) 170deg,transparent 180deg,rgba(255,255,255,.45) 190deg,transparent 200deg 360deg)}
+.mute{position:absolute;top:14px;inset-inline-end:14px;z-index:3;background:#fff;border:1px solid var(--cream-2);border-radius:99px;padding:5px 12px;font-size:12.5px;font-weight:600;display:flex;gap:6px;align-items:center;color:var(--gold-dk)}
+.podium{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:12px;align-items:end;position:relative;z-index:1;max-width:760px;margin-inline:auto}
+.slot{display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0}
+.badge{width:60px;height:60px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:26px;color:#fff;border:4px solid #fff;box-shadow:0 8px 18px -8px rgba(0,0,0,.35);margin-bottom:8px}
+.s1 .badge{width:76px;height:76px;font-size:32px;background:var(--gold)} .s2 .badge{background:var(--silver)} .s3 .badge{background:var(--bronze)}
+.who{min-height:92px;display:grid;align-content:end;gap:6px;justify-items:center;width:100%}
+.who .nm{font-family:var(--f-display);font-weight:700;font-size:19px;line-height:1.4;overflow-wrap:anywhere}
+.s1 .who .nm{font-size:23px}
+.who .pc{font-size:13px;font-weight:700;color:var(--gold-dk)}
+.who .mystery{width:70%;height:14px;border-radius:99px;background:repeating-linear-gradient(90deg,rgba(168,116,11,.25) 0 12px,rgba(168,116,11,.12) 12px 24px);animation:shimmer 1.2s linear infinite;background-size:48px 100%}
+@keyframes shimmer{to{background-position:-48px 0}}
+.cert-btn{border:1px solid var(--gold);background:#fff;color:var(--gold-dk);border-radius:99px;padding:4px 12px;font-size:12.5px;font-weight:700;display:inline-flex;gap:6px;align-items:center;transition:background .2s}
+.cert-btn:hover{background:var(--gold-lt)}
+.cert-btn:hover .ic{transform:rotate(-12deg) scale(1.2)}
+.block{width:100%;margin-top:12px;border-radius:14px 14px 0 0;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:40px;color:rgba(255,255,255,.85)}
+.s1 .block{height:150px;background:linear-gradient(180deg,#F4C350,var(--gold))} .s2 .block{height:110px;background:linear-gradient(180deg,#C3CDD3,var(--silver))} .s3 .block{height:82px;background:linear-gradient(180deg,#E09A69,var(--bronze))}
+.slot.pop .who>*{animation:pop .7s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes pop{from{transform:scale(.3);opacity:0}}
+.reveal{position:absolute;inset:0;z-index:2;display:grid;place-items:center;background:rgba(255,247,228,.35);backdrop-filter:blur(2px);transition:opacity .5s}
+.reveal.gone{opacity:0;pointer-events:none}
+.big-btn{background:linear-gradient(180deg,#F6C858,var(--gold));color:#2B1C00;border:0;border-radius:99px;padding:16px 40px;font-family:var(--f-display);font-size:24px;font-weight:700;box-shadow:0 12px 26px -10px rgba(168,116,11,.7),inset 0 -4px 0 rgba(0,0,0,.12);display:inline-flex;gap:10px;align-items:center;animation:pulse 2s ease-in-out infinite}
+.big-btn:hover{filter:brightness(1.05)}
+.big-btn:hover .ic{transform:rotate(-15deg) scale(1.2)}
+@keyframes pulse{50%{transform:scale(1.04)}}
+.empty{padding:30px 16px;text-align:center;color:var(--muted)}
+.podium-scroll{position:relative;z-index:1}
+.podium.wide{max-width:900px;gap:10px}
+.sx .badge{width:48px;height:48px;font-size:20px;background:var(--teal);border-width:3px}
+.sx .who .nm{font-size:16px;line-height:1.45}
+.sx .block{font-size:30px;background:linear-gradient(180deg,#7CCBF2,var(--teal))}
+.wide .slot .who{min-height:130px}
+.podium .slot .block{height:var(--h)}
+.slot.in .block{cursor:pointer}
+/* phones: the five columns stay side by side; names wrap above them and tapping a column opens the certificate */
+@media (max-width:640px){
+  .stage{padding-inline:10px}
+  .podium.wide{gap:4px}
+  .wide .slot .who{min-height:96px;gap:3px}
+  .wide .slot .who .nm,.wide .s1 .who .nm{font-size:12px;line-height:1.4}
+  .wide .slot .cert-btn{display:none}
+  .wide .slot .badge{width:32px;height:32px;font-size:15px;border-width:2px;margin-bottom:2px}
+  .wide .s1 .badge{width:40px;height:40px;font-size:19px}
+  .wide .slot .who .pc{font-size:11px}
+  .wide .slot .mystery{width:80%;height:8px}
+  .podium .slot .block{height:calc(var(--h) * .75);font-size:22px;border-radius:10px 10px 0 0}
+  .mute{font-size:11px;padding:3px 8px}
+}
+
+/* ===== words ===== */
+.words{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.word{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px;display:grid;gap:10px;align-content:start;position:relative}
+.word::after{content:"”";position:absolute;top:2px;inset-inline-start:16px;font-family:var(--f-display);font-size:70px;color:var(--teal-lt);line-height:1}
+.word small{color:var(--gold-dk);font-weight:700;font-size:12.5px}
+.word h3{font-size:19px;color:var(--teal-dk)}
+.word p{margin:0;white-space:pre-line;font-family:var(--f-hand);font-size:21px;line-height:1.9;color:var(--ink)}
+.reacts{display:flex;gap:8px;flex-wrap:wrap}
+.react{border:1px solid var(--line);background:#fff;border-radius:99px;padding:3px 12px;display:inline-flex;gap:6px;align-items:center;font-size:14px;transition:transform .2s,background .2s}
+.react:hover{transform:translateY(-2px) scale(1.05)}
+.react.on{background:var(--gold-lt);border-color:var(--gold)}
+.react .e{font-size:16px;line-height:1}
+
+/* ===== honor list ===== */
+.tools{display:flex;justify-content:center;margin-bottom:16px}
+.search{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:99px;padding:0 16px;min-height:44px;width:min(420px,100%)}
+.search input{border:0;outline:0;background:transparent;flex:1;min-width:0}
+.search .ic{color:var(--muted)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 14px 12px;display:grid;gap:6px;justify-items:center;text-align:center;cursor:pointer;transition:transform .25s,box-shadow .25s,border-color .25s;position:relative}
+.card:hover{transform:translateY(-4px);box-shadow:0 14px 26px -16px rgba(23,132,201,.45);border-color:var(--teal)}
+.card .rk{width:34px;height:34px;border-radius:50%;background:var(--teal-lt);color:var(--teal-dk);display:grid;place-items:center;font-family:var(--f-display);font-weight:700}
+.card .nm{font-weight:700;line-height:1.5}
+.card .pc{font-size:13px;color:var(--teal);font-weight:700}
+.heart{position:absolute;top:8px;inset-inline-end:8px;border:0;background:transparent;color:#C8D6E2;padding:4px;border-radius:50%;display:grid;place-items:center}
+.heart svg{width:20px;height:20px}
+.heart.on{color:var(--rose)}
+.heart.on svg{fill:var(--rose);animation:beat .5s}
+@keyframes beat{40%{transform:scale(1.4)}}
+.more{display:flex;justify-content:center;margin-top:14px}
+.link{border:0;background:transparent;color:var(--teal);font-weight:700;text-decoration:underline;text-underline-offset:4px}
+
+/* ===== wheel ===== */
+.wheel-box{display:grid;justify-items:center;gap:12px}
+.wheel-wrap{position:relative;width:min(340px,86vw);aspect-ratio:1;max-width:100%}
+.pointer{position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:0;height:0;border-inline:16px solid transparent;border-top:26px solid var(--rose);z-index:2;filter:drop-shadow(0 3px 2px rgba(0,0,0,.2))}
+.wheel{width:100%;height:100%;border-radius:50%;border:10px solid var(--gold);box-shadow:0 0 0 4px #fff,0 18px 34px -16px rgba(0,0,0,.4);transition:transform 4.2s cubic-bezier(.17,.67,.12,1);position:relative}
+.wheel .lbl{position:absolute;transform:translate(-50%,-50%);font-family:var(--f-display);font-weight:700;font-size:clamp(12px,3.6vw,15px);color:#fff;text-align:center;white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,.3);line-height:1.3}
+.hub{position:absolute;inset:36%;border-radius:50%;background:var(--teal-dk);color:#fff;border:5px solid #fff;font-family:var(--f-display);font-size:22px;font-weight:700;display:grid;place-items:center;z-index:2;transition:transform .2s}
+.hub:hover{transform:scale(1.06)}
+.hub:disabled{opacity:.7;cursor:not-allowed}
+.spins{color:var(--muted);font-size:14px}
+
+/* ===== control panel ===== */
+.panel{background:#fff;border:1px dashed var(--teal);border-radius:var(--r);margin-top:44px}
+.panel>summary{list-style:none;padding:16px 20px;display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:700;font-size:18px;color:var(--teal-dk);cursor:pointer}
+.panel>summary::-webkit-details-marker{display:none}
+.panel>summary .ic{color:var(--teal)}
+.panel>summary:hover .ic{transform:rotate(60deg)}
+.panel>summary small{font-family:var(--f-body);font-weight:400;color:var(--muted);font-size:13px;margin-inline-start:auto}
+.pbody{padding:0 20px 20px;display:grid;gap:22px}
+.pbody h3{font-size:16px;color:var(--teal);display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.grid .wide{grid-column:span 3}
+.grid label,.form label{display:grid;gap:4px;font-size:12.5px;color:var(--muted);min-width:0}
+.grid input,.grid textarea,.form input,textarea,.panel select{border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:8px 12px;min-height:42px;width:100%;color:var(--ink)}
+textarea{resize:vertical;min-height:84px}
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:12px;border:1px solid var(--line);background:#fff;padding:8px 16px;font-weight:600;font-size:14px;min-height:42px;transition:background .2s,border-color .2s}
+.btn:hover{border-color:var(--teal);background:var(--teal-lt)}
+.btn:hover .ic{transform:scale(1.2) rotate(-8deg)}
+.btn.primary{background:var(--teal);border-color:var(--teal);color:#fff}
+.btn.primary:hover{background:var(--teal-dk)}
+.btn.danger:hover,.btn.danger.armed{background:#FCE4E8;border-color:var(--rose);color:#B23650}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.hint{color:var(--muted);font-size:13px;margin:8px 0 0}
+.hint code{background:var(--bg);padding:1px 6px;border-radius:6px}
+.form{display:grid;grid-template-columns:2fr 1fr auto;gap:10px;align-items:end}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:14px;max-height:360px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;min-width:360px}
+th{position:sticky;top:0;background:var(--bg);font-size:12.5px;color:var(--muted);text-align:start;padding:8px 12px}
+td{padding:8px 12px;border-top:1px solid var(--line)}
+tr.below td{color:var(--muted)}
+.del{border:0;background:transparent;color:var(--muted);padding:4px;border-radius:8px}
+.del:hover{color:var(--rose);background:#FCE4E8}
+.file-lbl{cursor:pointer}
+
+/* ===== certificate ===== */
+.modal{position:fixed;inset:0;z-index:30;background:rgba(8,40,64,.55);display:grid;place-items:center;padding:20px max(16px,env(safe-area-inset-right,0px)) 20px max(16px,env(safe-area-inset-left,0px));overflow:auto}
+.modal-in{width:min(860px,100%);display:grid;gap:12px}
+.cert{background:#FFFDF6;aspect-ratio:1.414;max-width:100%;border-radius:6px;position:relative;padding:5%;display:grid;align-content:center;justify-items:center;text-align:center;gap:1.2%;
+  box-shadow:0 30px 60px -20px rgba(0,0,0,.5);container-type:inline-size;overflow:hidden}
+.cert::before{content:"";position:absolute;inset:2.2%;border:3px solid var(--gold);border-radius:4px;outline:1px solid var(--gold);outline-offset:-10px}
+.cert::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 0 0,var(--teal) 0 9%,transparent 9.2%),radial-gradient(circle at 100% 100%,var(--teal) 0 9%,transparent 9.2%),
+  radial-gradient(circle at 0 0,var(--gold) 0 11%,transparent 11.2%),radial-gradient(circle at 100% 100%,var(--gold) 0 11%,transparent 11.2%)}
+.cert>*{position:relative;z-index:1}
+.cert .c-school{font-size:2.2cqi;color:var(--teal);font-weight:700}
+.cert .c-title{font-family:var(--f-hand);font-size:7cqi;color:var(--gold-dk);line-height:1.3}
+.cert .c-text{font-size:2.3cqi;max-width:80%;line-height:1.9}
+.cert .c-name{font-family:var(--f-hand);font-size:6cqi;color:var(--teal-dk);line-height:1.4;border-bottom:2px dotted var(--gold);padding-inline:4cqi}
+.cert .c-medal{width:9cqi;height:9cqi;border-radius:50%;background:var(--gold);color:#fff;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:4cqi;border:.8cqi solid var(--gold-lt)}
+.cert .c-sign{display:flex;justify-content:space-around;width:84%;margin-top:3%;font-size:1.9cqi;color:var(--muted)}
+.cert .c-sign b{display:block;color:var(--ink);font-size:2.1cqi}
+.modal .row{justify-content:center}
+.modal .note{color:#fff;font-size:13.5px;text-align:center}
+
+/* ===== misc ===== */
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:40;width:100%;height:100%}
+.toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translate(-50%,160%);background:var(--teal-dk);color:#fff;padding:12px 20px;border-radius:14px;font-weight:600;display:flex;gap:8px;align-items:center;transition:transform .35s cubic-bezier(.34,1.56,.64,1);z-index:50;max-width:calc(100% - 32px)}
+.toast.show{transform:translate(-50%,0)}
+footer{color:var(--muted);font-size:13px;text-align:center;padding-block:30px}
+
+@media (max-width:820px){
+  .hero{grid-template-columns:1fr}
+  .hero-art{min-height:200px;order:-1}
+  .hero-txt{padding:4px 20px 24px;justify-items:center;text-align:center}
+  .words{grid-template-columns:1fr}
+  .grid{grid-template-columns:1fr}.grid .wide{grid-column:auto}
+  .form{grid-template-columns:1fr}
+}
+@media (max-width:520px){
+  .podium{gap:6px}
+  .who .nm{font-size:14.5px}.s1 .who .nm{font-size:17px}
+  .badge{width:46px;height:46px;font-size:20px}.s1 .badge{width:58px;height:58px;font-size:26px}
+  .big-btn{font-size:19px;padding:12px 26px}
+  .cert-btn{font-size:11px;padding:3px 8px}
+}
+@media print{
+  body{background:#fff}
+  body>*:not(.modal){display:none!important}
+  .modal{position:static;background:none;padding:0}
+  .modal .row,.modal .note{display:none}
+  .cert{box-shadow:none;width:100%}
+  @page{size:A4 landscape;margin:0}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="ribbon">
+  <div class="wrap">
+    <span><b>لوحة تكريم</b> المنضبطات في حل واجبات منصة مدرستي · النسبة <span id="thrLbl" class="num">٩٠٪</span> فأكثر</span>
+    <button class="chip-btn" data-go="panel" type="button"><i data-ic="settings"></i> لوحة التحكم</button>
+  </div>
+</div>
+
+<main class="wrap">
+  <header class="hero">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="hero-txt">
+      <span class="school-ribbon"><i data-ic="book"></i><span data-bind="school"></span></span>
+      <h1 data-bind="title"></h1>
+      <p class="h-sub">تكريم الطالبات الحاصلات على <b id="thrHero" class="num">٩٠٪ فأكثر</b> في حل واجبات منصة مدرستي · شهر <span data-bind="month"></span></p>
+      <div class="coords">
+        <span class="coord"><span class="av"><i data-ic="crown"></i></span><span><small>مديرة المدرسة</small><b data-bind="principal"></b></span></span>
+        <span class="coord"><span class="av"><i data-ic="award"></i></span><span><small>وكيلة شؤون الطالبات</small><b data-bind="vice"></b></span></span>
+        <span class="coord"><span class="av"><i data-ic="user"></i></span><span><small>منسقة منصة مدرستي طالبات</small><b data-bind="supervisor"></b></span></span>
+      </div>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <div class="rays"></div>
+      <svg class="trophy" viewBox="0 0 200 220">
+        <defs>
+          <linearGradient id="g1" x1="0" x2="1"><stop offset="0" stop-color="#FBE08A"/><stop offset=".5" stop-color="#E9AE2C"/><stop offset="1" stop-color="#B57E10"/></linearGradient>
+          <linearGradient id="g2" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#DDEEF9"/></linearGradient>
+        </defs>
+        <path d="M52 52h-18a22 22 0 0 0 22 38" fill="none" stroke="url(#g1)" stroke-width="10" stroke-linecap="round"/>
+        <path d="M148 52h18a22 22 0 0 1-22 38" fill="none" stroke="url(#g1)" stroke-width="10" stroke-linecap="round"/>
+        <path d="M48 28h104v46a52 52 0 0 1-104 0z" fill="url(#g1)"/>
+        <path d="M62 36h12v40a36 36 0 0 0 10 24a42 42 0 0 1-22-34z" fill="#fff" opacity=".4"/>
+        <polygon points="100,48 106,62 121,63 109,73 113,88 100,80 87,88 91,73 79,63 94,62" fill="#FFF7E4"/>
+        <rect x="90" y="124" width="20" height="26" fill="url(#g1)"/>
+        <path d="M70 150h60l6 14H64z" fill="url(#g1)"/>
+        <rect x="54" y="164" width="92" height="30" rx="6" fill="url(#g2)"/>
+        <rect x="74" y="173" width="52" height="12" rx="3" fill="#E9AE2C"/>
+        <path d="M30 198c30-10 110-10 140 0" stroke="#E0607A" stroke-width="7" fill="none" stroke-linecap="round"/>
+      </svg>
+      <span class="fl" style="top:12%;right:10%;color:var(--gold)"><i data-ic="star"></i></span>
+      <span class="fl" style="top:16%;left:8%;color:var(--teal)"><i data-ic="book"></i></span>
+      <span class="fl" style="bottom:16%;left:12%;color:var(--rose)"><i data-ic="heart"></i></span>
+      <span class="fl" style="bottom:20%;right:8%;color:var(--violet)"><i data-ic="pencil"></i></span>
+      <span class="spark" style="top:40%;right:4%;width:22px;height:22px"><svg viewBox="0 0 24 24"><path d="M12 0l3 9 9 3-9 3-3 9-3-9-9-3 9-3z"/></svg></span>
+      <span class="spark" style="top:6%;left:40%;width:16px;height:16px;animation-delay:1s"><svg viewBox="0 0 24 24"><path d="M12 0l3 9 9 3-9 3-3 9-3-9-9-3 9-3z"/></svg></span>
+      <span class="spark" style="bottom:6%;left:44%;width:18px;height:18px;animation-delay:1.8s;color:#fff"><svg viewBox="0 0 24 24"><path d="M12 0l3 9 9 3-9 3-3 9-3-9-9-3 9-3z"/></svg></span>
+    </div>
+    <svg class="wave" viewBox="0 0 1200 46" preserveAspectRatio="none" aria-hidden="true"><path d="M0 26C200 2 400 2 600 22S1000 44 1200 18V46H0z" fill="#EEF6FC"/></svg>
+  </header>
+
+  <section aria-labelledby="topT">
+    <h2 class="sec-t" id="topT"><i data-ic="crown"></i> نجمات القمة على مستوى المدرسة</h2>
+    <p class="sec-s">الخمس الأوائل في حل الواجبات هذا الشهر</p>
+    <div class="stage">
+      <button class="mute" id="mute" type="button"><i data-ic="volume"></i> <span>كتم الصوت</span></button>
+      <div id="podium"></div>
+      <div class="reveal" id="reveal"><button class="big-btn" id="revealBtn" type="button"><i data-ic="sparkles"></i> اكشفي نجمات القمة</button></div>
+    </div>
+  </section>
+
+  <section aria-label="كلمات التكريم">
+    <div class="words">
+      <article class="word"><small>كلمة مديرة المدرسة</small><h3 data-bind="principal"></h3><p data-bind="principalWord"></p><div class="reacts" data-reacts="p"></div></article>
+      <article class="word"><small>كلمة وكيلة شؤون الطالبات</small><h3 data-bind="vice"></h3><p data-bind="viceWord"></p><div class="reacts" data-reacts="s"></div></article>
+      <article class="word"><small>كلمة منسقة منصة مدرستي طالبات</small><h3 data-bind="supervisor"></h3><p data-bind="supervisorWord"></p><div class="reacts" data-reacts="c"></div></article>
+    </div>
+  </section>
+
+  <section aria-labelledby="listT">
+    <h2 class="sec-t" id="listT"><i data-ic="award"></i> قائمة المتميزات</h2>
+    <p class="sec-s">اضغطي على اسمك لعرض شهادة الشكر والتقدير</p>
+    <div class="tools"><label class="search" for="q"><i data-ic="search"></i><input id="q" type="search" placeholder="ابحثي عن اسمك"></label></div>
+    <div class="cards" id="cards"></div>
+    <div class="more"><button class="link" id="moreBtn" type="button" hidden>عرض الكل</button></div>
+  </section>
+
+  <section aria-labelledby="wheelT">
+    <h2 class="sec-t" id="wheelT"><i data-ic="star"></i> عجلة النجوم</h2>
+    <p class="sec-s">لفّي العجلة واكتشفي مفاجأتك</p>
+    <div class="wheel-box">
+      <div class="wheel-wrap"><span class="pointer"></span><div class="wheel" id="wheel"></div><button class="hub" id="spin" type="button">دوّري</button></div>
+      <div class="spins" id="spinsLeft"></div>
+    </div>
+  </section>
+
+  <details class="panel" id="panel">
+    <summary><i data-ic="settings"></i> لوحة التحكم <small>للمعلمة: بيانات اللوحة والطالبات</small></summary>
+    <div class="pbody">
+      <div>
+        <h3><i data-ic="book"></i> بيانات اللوحة</h3>
+        <div class="grid">
+          <label>اسم المدرسة<input id="set-school" data-set="school"></label>
+          <label>عنوان اللوحة<input id="set-title" data-set="title"></label>
+          <label>الشهر<input id="set-month" data-set="month"></label>
+          <label>مديرة المدرسة<input id="set-principal" data-set="principal"></label>
+          <label>وكيلة شؤون الطالبات<input id="set-vice" data-set="vice"></label>
+          <label>منسقة منصة مدرستي طالبات<input id="set-supervisor" data-set="supervisor"></label>
+          <label>حد الامتياز ٪<input id="set-thr" data-set="threshold" type="number" min="1" max="100" class="num"></label>
+          <label class="wide">كلمة مديرة المدرسة<textarea id="set-pw" data-set="principalWord"></textarea></label>
+          <label class="wide">كلمة وكيلة شؤون الطالبات<textarea id="set-vw" data-set="viceWord"></textarea></label>
+          <label class="wide">كلمة منسقة منصة مدرستي طالبات<textarea id="set-cw" data-set="supervisorWord"></textarea></label>
+          <label class="wide">محتوى عجلة النجوم (كل خيار في سطر: العنوان | الرسالة التي تظهر)<textarea id="set-wheel" data-set="wheel" style="min-height:190px"></textarea></label>
+        </div>
+      </div>
+
+      <div>
+        <h3><i data-ic="clipboard"></i> لصق أسماء الطالبات ونسبهن</h3>
+        <textarea id="pasteBox" placeholder="كل طالبة في سطر، مثال:&#10;نورة عبدالله 95&#10;ريم الشهري 100%&#10;لمى القحطاني 18 من 20"></textarea>
+        <div class="row" style="margin-top:10px">
+          <button class="btn primary" id="pasteBtn" type="button"><i data-ic="check"></i> اعتماد البيانات</button>
+          <label class="btn file-lbl" for="file"><i data-ic="upload"></i> أو رفع ملف Excel</label>
+          <input id="file" type="file" accept=".xlsx,.xls,.csv" hidden>
+        </div>
+        <p class="hint">لا حاجة لأعمدة: الاسم ثم النسبة، أو <code>18 من 20</code>. يُتجاهل رقم التسلسل، ويُقبل النسخ من Excel مباشرة.</p>
+      </div>
+
+      <div>
+        <h3><i data-ic="plus"></i> إضافة طالبة</h3>
+        <form class="form" id="addForm" autocomplete="off">
+          <label>اسم الطالبة<input id="fName" required></label>
+          <label>النسبة ٪<input id="fPct" type="number" min="0" max="100" step="0.1" required class="num"></label>
+          <button class="btn primary" type="submit"><i data-ic="plus"></i> إضافة</button>
+        </form>
+      </div>
+
+      <div>
+        <div class="row" style="justify-content:space-between;margin-bottom:10px">
+          <h3 style="margin:0"><i data-ic="list"></i> الطالبات (<span id="cnt" class="num">٠</span>)</h3>
+          <button class="btn danger" id="clearAll" type="button"><i data-ic="trash"></i> مسح كل الطالبات</button>
+        </div>
+        <div class="tbl"><table><thead><tr><th>الترتيب</th><th>اسم الطالبة</th><th>النسبة</th><th><span hidden>حذف</span></th></tr></thead><tbody id="tbody"></tbody></table></div>
+      </div>
+    </div>
+  </details>
+
+  <footer>تُحفظ البيانات في هذا المتصفح فقط · الأسماء الظاهرة عند أول فتح أمثلة توضيحية</footer>
+</main>
+
+<div class="modal" id="modal" hidden>
+  <div class="modal-in">
+    <div class="cert" id="cert"></div>
+    <div class="row">
+      <button class="btn primary" id="printBtn" type="button"><i data-ic="printer"></i> طباعة الشهادة</button>
+      <button class="btn" id="closeModal" type="button"><i data-ic="x"></i> إغلاق</button>
+    </div>
+    <p class="note" id="printNote" hidden>للطباعة: افتحي ملف index.html من جهازك ثم اضغطي «طباعة الشهادة».</p>
+  </div>
+</div>
+<canvas id="confetti"></canvas>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const ICONS={
+  settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68 1.65 1.65 0 0 0 10 3.17V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+  book:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
+  user:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  crown:'<path d="M2 6l3.5 11h13L22 6l-6 5-4-7-4 7-6-5z"/><path d="M5.5 21h13"/>',
+  award:'<circle cx="12" cy="8" r="6"/><path d="M15.48 12.89 17 22l-5-3-5 3 1.52-9.11"/>',
+  star:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+  sparkles:'<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/>',
+  volume:'<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>',
+  mute:'<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>',
+  search:'<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+  heart:'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>',
+  printer:'<polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>',
+  clipboard:'<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>',
+  upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',
+  plus:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+  check:'<polyline points="20 6 9 17 4 12"/>',
+  pencil:'<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+  x:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  trash:'<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>',
+  list:'<line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/>'
+};
+const ic=n=>`<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]||''}</svg>`;
+const paintIcons=(root=document)=>root.querySelectorAll('i[data-ic]').forEach(el=>{el.outerHTML=ic(el.dataset.ic)});
+const nf=new Intl.NumberFormat('ar-SA',{maximumFractionDigits:1});
+const N=v=>nf.format(v);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $=id=>document.getElementById(id);
+const inFrame=(()=>{try{return window.self!==window.top}catch(e){return true}})();
+
+/* ---------- state ---------- */
+let hijriMonth='';
+try{hijriMonth=new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura',{month:'long',year:'numeric'}).format(new Date())}catch(e){}
+const DEFAULTS={
+  school:'الابتدائية السادسة والأربعون بعد المئة',title:'نجمات الانضباط في حل الواجبات',month:hijriMonth||'جمادى الأولى ١٤٤٨ هـ',
+  principal:'أ. إحسان كشك',vice:'أ. رحيمة المالكي',supervisor:'أ. هدى العتيبي',threshold:90,
+  principalWord:'بناتي المتميزات، استمررن في التألق، واجعلن شعاركن دائمًا:\n«واجباتي مسؤولية… وإتقاني عنوان تميزي… وامتيازي ثمرة اجتهادي».\nمبارك لكن هذا الإنجاز، وأسأل الله أن يبارك في علمكن، وينفع بكن، ويجعلكن من بنات الوطن الطموحات اللواتي يسهمن بعلمهن وعطائهن في رفعة وطننا الغالي، المملكة العربية السعودية.',
+  wheel:['وسام المثابرة | وسام المثابرة لكِ! 🏅 التزامك بواجباتك يصنع نجاحك','نجمة الصف | أنتِ نجمة الصف اليوم ⭐ استمري في التألق',
+    'تحدي اليوم | تحدي اليوم: حلّي واجبك قبل موعده بيوم كامل 💪','معلومة ذهبية | هل تعلمين؟ مراجعة الدرس ١٠ دقائق كل يوم تثبّت المعلومة أكثر من المذاكرة ليلة الاختبار 📚',
+    'حظ أوفر | حظ أوفر هذه المرة، جرّبي غدًا 🌷','كلمة فخر | معلمتك فخورة بكِ وبانضباطك 💚',
+    'دعوة جميلة | وفقكِ الله وأنار دربكِ بالعلم والنور 🤍','لقب البطلة | لقبك اليوم: بطلة الواجبات 👑'].join('\n'),
+  viceWord:'دمتُنَّ نجماتٍ مضيئات في سماء مدرستنا، ودام تميزكن مصدر فخر واعتزاز.',
+  supervisorWord:'دخولك لمنصة مدرستي وحل واجباتك خطوة نحو تميزك، وكل مشاركة وتفاعل يعكس حرصكن على التفوق وتحقيق الطموحات.',
+};
+const SAMPLE=[['نورة عبدالله القحطاني',100],['ريم سعد الشهري',100],['لمى خالد العتيبي',99],['شهد ناصر الغامدي',98.5],['رغد فهد الحربي',98],
+  ['ليان ماجد الدوسري',97],['سارة علي المطيري',96.5],['هيا تركي الزهراني',96],['دانة بندر السبيعي',95],['وعد سلطان الشمري',94],
+  ['أريج حمد العنزي',93.5],['جنى صالح البقمي',93],['مها عمر الأحمدي',92],['ترف يوسف القرني',91],['جود نايف الرشيدي',90],
+  ['ملاك راشد الجهني',87],['غلا سامي البلوي',82]];
+const mk=(name,pct)=>({id:Math.random().toString(36).slice(2,10),name:String(name).trim(),pct:Math.round(Math.min(100,Math.max(0,pct))*10)/10});
+let state={settings:{...DEFAULTS},students:SAMPLE.map(r=>mk(...r)),isSample:true,hearts:{},reacts:{},wheel:{day:'',used:0}};
+try{const s=JSON.parse(localStorage.getItem('takreem-v2'));if(s&&Array.isArray(s.students))state={...state,...s,settings:{...DEFAULTS,...s.settings}}
+  else{const old=JSON.parse(localStorage.getItem('honor-v1'));if(old&&!old.isSample&&old.students?.length){state.students=old.students.map(x=>mk(x.name,x.pct));state.isSample=false}}}catch(e){}
+if(state.settings.supervisor==='أ. منى بنت أحمد الحربي')state.settings.supervisor=DEFAULTS.supervisor;  // earlier placeholder names
+if(state.settings.school==='متوسطة النور للبنات')state.settings.school=DEFAULTS.school;
+if(state.settings.principal==='أ. هند بنت سعد العتيبي')state.settings.principal=DEFAULTS.principal;
+if(state.settings.principalWord?.startsWith('بناتي المتميزات، فخورة بكل'))state.settings.principalWord=DEFAULTS.principalWord;
+if(state.settings.supervisorWord?.startsWith('سعدتُ بمتابعة'))state.settings.supervisorWord=DEFAULTS.supervisorWord;
+const save=()=>{try{localStorage.setItem('takreem-v2',JSON.stringify(state))}catch(e){}};
+
+/* ---------- parsing (paste / Excel) ---------- */
+const toLatin=s=>String(s??'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/٫/g,'.');
+const num=v=>{if(typeof v==='number')return v;const s=toLatin(v).replace(/[%٪\s,]/g,'');return s===''?NaN:parseFloat(s)};
+const pctOf=(pct,done,total)=>!isNaN(pct)&&pct!=null?pct:(total>0?done/total*100:NaN);
+const KEYS={pct:['نسبة','النسبة','%','٪','percent'],done:['محلول','المحلولة','منجز','المنجزة','المسلم','المسلمة','solved','done','completed'],
+  total:['المسندة','مسند','إجمالي','اجمالي','الكلي','total','assigned','عدد الواجبات'],name:['اسم','الاسم','الطالبة','الطالب','name']};
+function mapHeader(row){const m={};const cells=row.map(c=>toLatin(c).toLowerCase());
+  for(const key of ['pct','done','total','name']){const i=cells.findIndex((c,idx)=>c&&!Object.values(m).includes(idx)&&KEYS[key].some(k=>c.includes(k)));if(i>-1)m[key]=i}
+  return m}
+/* no header row: tell columns apart by what their cells hold */
+function guessCols(rows){
+  const w=Math.max(...rows.map(r=>r.length)),text=[],nums=[];
+  for(let c=0;c<w;c++){
+    const cells=rows.map(r=>String(r[c]??'').trim()).filter(Boolean);if(!cells.length)continue;
+    if(cells.filter(v=>/[ء-يa-z]/i.test(v)).length>cells.length/2){text.push(c);continue}
+    const serial=rows.filter((r,i)=>num(r[c])===i+1).length>rows.length*.7;  // 1,2,3… column
+    if(!serial)nums.push(c);
+  }
+  const len=c=>rows.reduce((a,r)=>a+String(r[c]??'').trim().length,0);
+  const m={name:text.length?text.reduce((a,b)=>len(b)>len(a)?b:a):0};  // names are the longest text
+  if(nums.length>=2){m.done=nums[nums.length-2];m.total=nums[nums.length-1]}else if(nums.length)m.pct=nums[0];
+  return m;
+}
+function parseRows(rows){
+  rows=rows.filter(r=>r&&r.some(c=>String(c).trim()!==''));if(!rows.length)return [];
+  let h=-1,m={};
+  for(let i=0;i<Math.min(15,rows.length);i++){const mm=mapHeader(rows[i]);if(mm.name!=null&&(mm.pct!=null||mm.done!=null)){h=i;m=mm;break}}
+  if(h===-1)m=guessCols(rows);
+  const out=[];
+  for(const r of rows.slice(h+1)){
+    const name=String(r[m.name]??'').trim();if(!name)continue;
+    let pct=m.pct!=null?num(r[m.pct]):NaN;
+    if(!isNaN(pct)&&pct>0&&pct<=1&&String(r[m.pct]).includes('.')&&!String(r[m.pct]).includes('%'))pct*=100;
+    const p=pctOf(pct,m.done!=null?num(r[m.done]):NaN,m.total!=null?num(r[m.total]):NaN);
+    if(!isNaN(p))out.push(mk(name,p));
+  }
+  return out;
+}
+/* words that label a number in pasted reports, never part of a student's name */
+const LABELS=new Set(['من','نسبة','النسبة','حل','الحل','الواجبات','واجبات','الواجب','واجب','المحلولة','محلولة','المحلول','المسندة','مسندة','المنجزة','الإنجاز','انجاز','الانجاز',
+  'إنجاز','المسلمة','التسليم','عدد','المجموع','الإجمالي','اجمالي','إجمالي','النتيجة','الدرجة','درجة','التقدير','ممتاز','مكتمل','المكتملة','بنسبة','في','منصة','مدرستي']);
+const OTHER_METRIC=/اختبار|الدروس|دروس|الحضور|حضور|نشاط|الأنشطة|مشارك|إثراء|اثراء/;  // other report rows, skipped so they don't replace the homework figure
+/* free text: one student per line, no columns */
+function freeParse(txt){
+  const out=[];let pending=null;
+  for(let l of toLatin(txt).split(/\r?\n/).map(x=>x.trim()).filter(Boolean)){
+    const noSerial=l.replace(/^\d+\s*[.)\-–:]?\s*(?=[^\d\s%٪.\/])/,'');  // leading serial number, kept if it is the only number
+    if(/\d/.test(noSerial))l=noSerial;
+    if(OTHER_METRIC.test(l)&&!/واجب/.test(l)&&/\d/.test(l))continue;
+    const nums=(l.match(/\d+(?:\.\d+)?/g)||[]).map(Number);
+    const name=l.replace(/\d+(?:\.\d+)?/g,' ').replace(/[%٪\/\\|:،,;()\[\]\-–_*•]+/g,' ')
+      .split(/\s+/).filter(w=>w&&!LABELS.has(w.replace(/^و/,''))).join(' ').trim();
+    if(!nums.length){if(name)pending=name;continue}
+    const who=name||pending;pending=null;if(!who)continue;
+    let p;
+    if(nums.length>=2){const [a,b]=nums.slice(-2);p=(b>0&&a<=b&&!/[%٪]/.test(l))?a/b*100:nums.find(n=>n<=100)}
+    else{p=nums[0];if(p>0&&p<=1&&String(p).includes('.'))p*=100}
+    if(p!=null&&!isNaN(p))out.push(mk(who,p));
+  }
+  return out;
+}
+function merge(list){
+  if(!list.length)return toast('لم يُعثر على أسماء ونسب. اكتبي كل طالبة في سطر: الاسم ثم النسبة.','x'),false;
+  if(state.isSample){state.students=[];state.isSample=false;state.hearts={}}
+  let added=0,updated=0;
+  for(const s of list){const ex=state.students.find(x=>x.name===s.name);if(ex){ex.pct=s.pct;updated++}else{state.students.push(s);added++}}
+  save();shown=0;clearTimeout(revealTimer);renderAll();
+  toast(`أُضيفت ${N(added)} طالبة${updated?` وحُدّثت ${N(updated)}`:''}`,'check');return true;
+}
+
+/* ---------- ranking ---------- */
+function ranked(){
+  const s=[...state.students].sort((a,b)=>b.pct-a.pct||a.name.localeCompare(b.name,'ar'));
+  let prev=null,r=0;s.forEach((x,i)=>{if(x.pct!==prev){r=i+1;prev=x.pct}x.rank=r});
+  return s;
+}
+const honorees=()=>ranked().filter(s=>s.pct>=state.settings.threshold);
+
+/* ---------- render ---------- */
+const TOP=5;  // how many leaders stand on the podium
+let shown=0,revealTimer,showAll=false;
+function renderBinds(){
+  const st=state.settings;
+  document.querySelectorAll('[data-bind]').forEach(el=>el.textContent=st[el.dataset.bind]||'');
+  $('thrLbl').textContent=N(st.threshold)+'٪';$('thrHero').textContent=N(st.threshold)+'٪ فأكثر';
+  document.querySelectorAll('[data-set]').forEach(el=>{if(document.activeElement!==el)el.value=st[el.dataset.set]??''});
+}
+function renderPodium(){
+  const top=honorees().slice(0,TOP),n=top.length,first=n-shown;  // indexes >= first are revealed; first is the newest
+  $('reveal').classList.toggle('gone',shown>0||!n);
+  if(!n){$('podium').innerHTML=`<div class="empty">لا توجد طالبات بنسبة ${N(state.settings.threshold)}٪ فأكثر بعد. أضيفيهن من لوحة التحكم.</div>`;return}
+  const st=i=>i<first?'':i===first?' in pop':' in';
+  const H=[170,142,118,100,86];  // column height per place
+  const slot=i=>{const s=top[i],p=i+1,big=p<=3;return `<div class="slot ${big?'s'+p:'sx'}${st(i)}">
+      <div class="who">${i>=first?`<span class="badge num">${N(s.rank)}</span><span class="nm">${esc(s.name)}</span><span class="pc num">${N(s.pct)}٪</span>
+        <button class="cert-btn" data-cert="${s.id}" type="button" aria-label="شهادة ${esc(s.name)}">${ic('printer')}${big?' شهادة الشكر والتقدير':' الشهادة'}</button>`
+        :`<span class="badge">؟</span><span class="mystery"></span>`}</div>
+      <div class="block num" style="--h:${H[i]}px"${i>=first?` data-cert="${s.id}"`:''}>${N(p)}</div></div>`};
+  // place 1 in the middle, then 2 to its right, 3 to its left, and so on outward
+  const order=[3,1,0,2,4].filter(i=>i<n);
+  const cols=order.map(i=>i<3?'1.3fr':'1fr').join(' ');
+  $('podium').innerHTML=`<div class="podium-scroll"><div class="podium${n>3?' wide':''}" style="grid-template-columns:${cols}">${order.map(slot).join('')}</div></div>`;
+}
+function renderCards(){
+  const q=$('q').value.trim(), list=honorees();
+  let rest=q?list.filter(s=>s.name.includes(q)):list.slice(TOP);
+  const total=rest.length;if(!showAll&&!q)rest=rest.slice(0,12);
+  $('cards').innerHTML=rest.length?rest.map(s=>`<div class="card" data-cert="${s.id}" role="button" tabindex="0" aria-label="شهادة ${esc(s.name)}">
+      <button class="heart${state.hearts[s.id]?' on':''}" data-heart="${s.id}" type="button" aria-label="إعجاب">${ic('heart')}</button>
+      <span class="rk num">${N(s.rank)}</span><span class="nm">${esc(s.name)}</span><span class="pc num">${N(s.pct)}٪</span></div>`).join('')
+    :`<div class="empty" style="grid-column:1/-1">${q?'لم نجد هذا الاسم بين المتميزات.':list.length?'جميع المتميزات ضمن الخمس الأوائل.':'لا توجد متميزات بعد.'}</div>`;
+  $('moreBtn').hidden=q||total<=12;$('moreBtn').textContent=showAll?'عرض أقل':`عرض الكل (${N(total)})`;
+}
+const REACTS=[['💚','love'],['⭐','star'],['👏','clap'],['🌸','rose']];
+function renderReacts(){
+  document.querySelectorAll('[data-reacts]').forEach(box=>{const k=box.dataset.reacts;
+    box.innerHTML=REACTS.map(([e,n])=>{const on=state.reacts[k+n];return `<button class="react${on?' on':''}" data-react="${k+n}" type="button"><span class="e">${e}</span><span class="num">${N(on?1:0)}</span></button>`}).join('')});
+}
+function renderTable(){
+  const t=state.settings.threshold, list=ranked();
+  $('cnt').textContent=N(list.length);
+  $('tbody').innerHTML=list.length?list.map(s=>`<tr class="${s.pct>=t?'':'below'}"><td class="num">${N(s.rank)}</td><td>${esc(s.name)}</td><td class="num">${N(s.pct)}٪</td>
+    <td><button class="del" data-del="${s.id}" type="button" aria-label="حذف ${esc(s.name)}">${ic('trash')}</button></td></tr>`).join('')
+    :`<tr><td colspan="4" class="empty">لا توجد طالبات. الصقي الأسماء والنسب في الأعلى.</td></tr>`;
+}
+function renderAll(){renderBinds();renderPodium();renderCards();renderReacts();renderTable();renderWheelInfo()}
+
+/* ---------- sound ---------- */
+let muted=false,ac;
+const audio=()=>{if(muted)return null;try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();return ac}catch(e){return null}};
+const noise=(a,sec,decay)=>{const b=a.createBuffer(1,Math.ceil(a.sampleRate*sec),a.sampleRate),d=b.getChannelData(0);
+  for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*(decay?Math.pow(1-i/d.length,decay):1);return b};
+/* applause: many short filtered noise claps scattered in time */
+function applause(dur=3,amt=1){const a=audio();if(!a)return;const t0=a.currentTime,clap=noise(a,.07,5);
+  const out=a.createGain();out.gain.setValueAtTime(0,t0);out.gain.linearRampToValueAtTime(.75,t0+.2);out.gain.setValueAtTime(.75,t0+dur*.6);out.gain.linearRampToValueAtTime(0,t0+dur);out.connect(a.destination);
+  for(let i=0,n=dur*60*amt;i<n;i++){const s=a.createBufferSource(),f=a.createBiquadFilter(),g=a.createGain();
+    s.buffer=clap;s.playbackRate.value=.7+Math.random()*.6;f.type='bandpass';f.frequency.value=800+Math.random()*2200;f.Q.value=.9;g.gain.value=.2+Math.random()*.4;
+    s.connect(f).connect(g).connect(out);s.start(t0+Math.random()*dur*.9)}}
+/* cheering: crowd roar + rising "woo" voices + two whistles */
+function cheer(dur=2){const a=audio();if(!a)return;const t0=a.currentTime;
+  const r=a.createBufferSource(),rf=a.createBiquadFilter(),rg=a.createGain();r.buffer=noise(a,dur,0);rf.type='bandpass';rf.frequency.value=600;rf.Q.value=.6;
+  rg.gain.setValueAtTime(0,t0);rg.gain.linearRampToValueAtTime(.35,t0+.4);rg.gain.linearRampToValueAtTime(0,t0+dur);r.connect(rf).connect(rg).connect(a.destination);r.start(t0);
+  for(let i=0;i<7;i++){const o=a.createOscillator(),f=a.createBiquadFilter(),g=a.createGain(),lfo=a.createOscillator(),lg=a.createGain();
+    const base=260+Math.random()*220,st=t0+Math.random()*.4,len=.9+Math.random()*.8;
+    o.type='sawtooth';o.frequency.setValueAtTime(base,st);o.frequency.linearRampToValueAtTime(base*1.5,st+len*.35);o.frequency.linearRampToValueAtTime(base*1.1,st+len);
+    lfo.frequency.value=5+Math.random()*2;lg.gain.value=base*.03;lfo.connect(lg).connect(o.frequency);
+    f.type='bandpass';f.frequency.value=900;f.Q.value=1.5;
+    g.gain.setValueAtTime(0,st);g.gain.linearRampToValueAtTime(.05,st+.08);g.gain.linearRampToValueAtTime(0,st+len);
+    o.connect(f).connect(g).connect(a.destination);o.start(st);o.stop(st+len);lfo.start(st);lfo.stop(st+len)}
+  [.2,.9].forEach(d=>{const o=a.createOscillator(),g=a.createGain(),st=t0+d;o.type='sine';
+    o.frequency.setValueAtTime(1700,st);o.frequency.linearRampToValueAtTime(2700,st+.25);o.frequency.linearRampToValueAtTime(2100,st+.5);
+    g.gain.setValueAtTime(0,st);g.gain.linearRampToValueAtTime(.08,st+.05);g.gain.linearRampToValueAtTime(0,st+.55);o.connect(g).connect(a.destination);o.start(st);o.stop(st+.6)})}
+function tick(){const a=audio();if(!a)return;const o=a.createOscillator(),g=a.createGain();o.frequency.value=1200;g.gain.setValueAtTime(.08,a.currentTime);
+  g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.04);o.connect(g).connect(a.destination);o.start();o.stop(a.currentTime+.05)}
+
+/* ---------- confetti ---------- */
+const cv=$('confetti'),cx=cv.getContext('2d');let bits=[],raf;
+function confetti(n=160){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  cv.width=innerWidth;cv.height=innerHeight;const cols=['#E2A626','#F6C858','#1784C9','#38AEE6','#0B4F7A','#FFFFFF'];
+  for(let i=0;i<n;i++)bits.push({x:Math.random()*cv.width,y:-20-Math.random()*cv.height*.5,w:6+Math.random()*6,h:8+Math.random()*8,
+    vy:2+Math.random()*3,vx:-1.5+Math.random()*3,r:Math.random()*6,vr:-.2+Math.random()*.4,c:cols[i%cols.length]});
+  cancelAnimationFrame(raf);(function loop(){cx.clearRect(0,0,cv.width,cv.height);
+    bits=bits.filter(b=>b.y<cv.height+30);bits.forEach(b=>{b.y+=b.vy;b.x+=b.vx+Math.sin(b.y/30);b.r+=b.vr;
+      cx.save();cx.translate(b.x,b.y);cx.rotate(b.r);cx.fillStyle=b.c;cx.fillRect(-b.w/2,-b.h/2,b.w,b.h);cx.restore()});
+    if(bits.length)raf=requestAnimationFrame(loop)})();
+}
+
+/* ---------- reveal ---------- */
+/* counts down from place 10 to place 1, with longer pauses before the top three */
+function revealNext(){
+  const n=honorees().slice(0,TOP).length;if(shown>=n)return;
+  shown++;renderPodium();
+  const place=n-shown+1;
+  if(place<=3){applause(place===1?4.5:2.4,place===1?1.4:1);cheer(place===1?3:1.6);confetti(place===1?240:110)}
+  else applause(1.2,.6);
+  if(shown<n)revealTimer=setTimeout(revealNext,place-1<=3?2800:1400);
+}
+$('revealBtn').addEventListener('click',()=>{clearTimeout(revealTimer);shown=0;revealNext()});
+$('mute').addEventListener('click',e=>{muted=!muted;e.currentTarget.innerHTML=ic(muted?'mute':'volume')+`<span>${muted?'تشغيل الصوت':'كتم الصوت'}</span>`});
+
+/* ---------- certificate ---------- */
+function openCert(id){
+  const s=ranked().find(x=>x.id===id);if(!s)return;const st=state.settings;
+  $('cert').innerHTML=`<div class="c-school">${esc(st.school)}</div><div class="c-title">شهادة شكر وتقدير</div>
+    <div class="c-text">تتقدم إدارة المدرسة بخالص الشكر والتقدير للطالبة</div><div class="c-name">${esc(s.name)}</div>
+    <div class="c-text">لانضباطها في حل الواجبات على منصة مدرستي وحصولها على نسبة <b class="num">${N(s.pct)}٪</b> في شهر ${esc(st.month)}، متمنين لها دوام التميز والنجاح.</div>
+    <div class="c-medal num">${N(s.rank)}</div>
+    <div class="c-sign"><span>منسقة منصة مدرستي طالبات<b>${esc(st.supervisor)}</b></span><span>وكيلة شؤون الطالبات<b>${esc(st.vice)}</b></span><span>مديرة المدرسة<b>${esc(st.principal)}</b></span></div>`;
+  $('printBtn').hidden=inFrame;$('printNote').hidden=!inFrame;
+  $('modal').hidden=false;confetti(80);applause(1.6,.7);$('closeModal').focus();
+}
+$('closeModal').addEventListener('click',()=>$('modal').hidden=true);
+$('modal').addEventListener('click',e=>{if(e.target===$('modal'))$('modal').hidden=true});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')$('modal').hidden=true});
+$('printBtn').addEventListener('click',()=>window.print());
+
+document.addEventListener('click',e=>{
+  const h=e.target.closest('[data-heart]');
+  if(h){e.stopPropagation();const id=h.dataset.heart;state.hearts[id]=!state.hearts[id];save();renderCards();return}
+  const c=e.target.closest('[data-cert]');if(c)return openCert(c.dataset.cert);
+  const r=e.target.closest('[data-react]');if(r){state.reacts[r.dataset.react]=!state.reacts[r.dataset.react];save();renderReacts();return}
+  const g=e.target.closest('[data-go="panel"]');if(g){$('panel').open=true;$('panel').scrollIntoView({behavior:'smooth'});setTimeout(()=>$('pasteBox').focus({preventScroll:true}),500)}
+});
+$('cards').addEventListener('keydown',e=>{const c=e.target.closest('.card');if(c&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openCert(c.dataset.cert)}});
+$('q').addEventListener('input',renderCards);
+$('moreBtn').addEventListener('click',()=>{showAll=!showAll;renderCards()});
+
+/* ---------- wheel ---------- */
+/* each line in the control panel: title | message */
+const WCOL=['#E2A626','#1784C9','#C9901A','#0B4F7A','#F0B93A','#38AEE6','#A8740B','#1577B8'];
+const parseWheel=t=>String(t||'').split(/\r?\n/).map(l=>l.split('|').map(x=>x.trim())).filter(p=>p[0]).slice(0,12);
+let PRIZES=[],seg=60,rot=0;
+function buildWheel(){
+  let items=parseWheel(state.settings.wheel);if(items.length<2)items=parseWheel(DEFAULTS.wheel);
+  PRIZES=items.map((p,i)=>[p[0],WCOL[i%WCOL.length],p[1]||p[0]]);
+  if(PRIZES.length%WCOL.length===1&&PRIZES.length>1)PRIZES[PRIZES.length-1][1]=WCOL[2];  // keep last slice unlike the first
+  seg=360/PRIZES.length;
+  $('wheel').style.background=`conic-gradient(${PRIZES.map((p,i)=>`${p[1]} ${i*seg}deg ${(i+1)*seg}deg`).join(',')})`;
+  $('wheel').innerHTML=PRIZES.map((p,i)=>{const a=(i*seg+seg/2)*Math.PI/180;
+    return `<span class="lbl" style="left:${50+34*Math.sin(a)}%;top:${50-34*Math.cos(a)}%">${esc(p[0]).replace(' ','<br>')}</span>`}).join('');
+}
+buildWheel();
+const today=()=>new Date().toISOString().slice(0,10);
+function renderWheelInfo(){if(state.wheel.day!==today())state.wheel={day:today(),used:0};
+  const left=3-state.wheel.used;$('spinsLeft').textContent=left>0?`لكِ ${N(left)} ${left===1?'دورة':'دورات'} اليوم`:'انتهت دوراتك لليوم، عودي غدًا';$('spin').disabled=left<=0}
+$('spin').addEventListener('click',()=>{
+  renderWheelInfo();if(state.wheel.used>=3)return;
+  const k=Math.floor(Math.random()*PRIZES.length);
+  rot+=360*5+((360-(k*seg+seg/2))-(rot%360)+360)%360;
+  $('wheel').style.transform=`rotate(${rot}deg)`;$('spin').disabled=true;
+  let n=0;const tk=setInterval(()=>{tick();if(++n>22)clearInterval(tk)},170);
+  setTimeout(()=>{state.wheel.used++;save();renderWheelInfo();toast(PRIZES[k][2],'star');if(!PRIZES[k][0].includes('حظ')){confetti(90);applause(2,.8);cheer(1.5)}},4300);
+});
+
+/* ---------- control panel ---------- */
+document.querySelectorAll('[data-set]').forEach(el=>el.addEventListener('input',()=>{
+  let v=el.value;if(el.dataset.set==='threshold'){v=num(v);if(!(v>0&&v<=100))return}
+  state.settings[el.dataset.set]=v;save();renderBinds();renderPodium();renderCards();renderTable();if(el.dataset.set==='wheel')buildWheel()}));
+$('pasteBtn').addEventListener('click',()=>{const t=$('pasteBox').value.trim();if(!t)return toast('الصقي الأسماء والنسب أولًا','x');
+  const list=t.includes('\t')?parseRows(t.split(/\r?\n/).map(l=>l.split('\t'))):freeParse(t);if(merge(list))$('pasteBox').value=''});
+$('file').addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+  if(typeof XLSX==='undefined')return toast('تعذّر تحميل قارئ Excel، الصقي البيانات بدلًا من ذلك','x');
+  const csv=/\.csv$/i.test(f.name),r=new FileReader();
+  r.onload=()=>{try{const wb=XLSX.read(csv?r.result:new Uint8Array(r.result),{type:csv?'string':'array'});
+    merge(parseRows(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:'',raw:false})))}catch(err){toast('تعذّرت قراءة الملف، جرّبي حفظه بصيغة xlsx','x')}};
+  csv?r.readAsText(f,'utf-8'):r.readAsArrayBuffer(f)});
+$('addForm').addEventListener('submit',e=>{e.preventDefault();const p=num($('fPct').value);
+  if(merge([mk($('fName').value,p)])){$('fName').value='';$('fPct').value='';$('fName').focus()}});
+$('tbody').addEventListener('click',e=>{const b=e.target.closest('[data-del]');if(!b)return;
+  state.students=state.students.filter(x=>x.id!==b.dataset.del);save();renderAll()});
+let arm;$('clearAll').addEventListener('click',e=>{const b=e.currentTarget;
+  if(!b.classList.contains('armed')){b.classList.add('armed');b.innerHTML=ic('trash')+' اضغطي مرة أخرى للتأكيد';clearTimeout(arm);
+    arm=setTimeout(()=>{b.classList.remove('armed');b.innerHTML=ic('trash')+' مسح كل الطالبات'},3500);return}
+  clearTimeout(arm);b.classList.remove('armed');b.innerHTML=ic('trash')+' مسح كل الطالبات';
+  state.students=[];state.isSample=false;state.hearts={};save();shown=0;clearTimeout(revealTimer);renderAll();toast('مُسحت جميع الطالبات','trash')});
+
+/* ---------- toast ---------- */
+let tt;function toast(msg,icn='check'){const el=$('toast');el.innerHTML=ic(icn)+esc(msg);el.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('show'),3200)}
+
+paintIcons();renderAll();
+addEventListener('resize',()=>{cv.width=innerWidth;cv.height=innerHeight});
+</script>
