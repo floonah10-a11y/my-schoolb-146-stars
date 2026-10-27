@@ -448,7 +448,7 @@ const ICONS={
 };
 const ic=n=>`<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]||''}</svg>`;
 const paintIcons=(root=document)=>root.querySelectorAll('i[data-ic]').forEach(el=>{el.outerHTML=ic(el.dataset.ic)});
-const nf=new Intl.NumberFormat('ar-SA',{maximumFractionDigits:1});
+const nf=new Intl.NumberFormat('ar-SA',{maximumFractionDigits:3});  // show percentages as entered
 const N=v=>nf.format(v);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const $=id=>document.getElementById(id);
@@ -472,7 +472,7 @@ const SAMPLE=[['نورة عبدالله القحطاني',100],['ريم سعد �
   ['ليان ماجد الدوسري',97],['سارة علي المطيري',96.5],['هيا تركي الزهراني',96],['دانة بندر السبيعي',95],['وعد سلطان الشمري',94],
   ['أريج حمد العنزي',93.5],['جنى صالح البقمي',93],['مها عمر الأحمدي',92],['ترف يوسف القرني',91],['جود نايف الرشيدي',90],
   ['ملاك راشد الجهني',87],['غلا سامي البلوي',82]];
-const mk=(name,pct)=>({id:Math.random().toString(36).slice(2,10),name:String(name).trim(),pct:Math.round(Math.min(100,Math.max(0,pct))*10)/10});
+const mk=(name,pct)=>({id:Math.random().toString(36).slice(2,10),name:String(name).trim(),pct:Math.min(100,Math.max(0,pct))});
 let state={settings:{...DEFAULTS},students:SAMPLE.map(r=>mk(...r)),isSample:true,hearts:{},reacts:{},wheel:{day:'',used:0}};
 try{const s=JSON.parse(localStorage.getItem('takreem-v2'));if(s&&Array.isArray(s.students))state={...state,...s,settings:{...DEFAULTS,...s.settings}}
   else{const old=JSON.parse(localStorage.getItem('honor-v1'));if(old&&!old.isSample&&old.students?.length){state.students=old.students.map(x=>mk(x.name,x.pct));state.isSample=false}}}catch(e){}
@@ -486,7 +486,8 @@ const save=()=>{try{localStorage.setItem('takreem-v2',JSON.stringify(state))}cat
 /* ---------- parsing (paste / Excel) ---------- */
 const toLatin=s=>String(s??'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/٫/g,'.');
 const num=v=>{if(typeof v==='number')return v;const s=toLatin(v).replace(/[%٪\s,]/g,'');return s===''?NaN:parseFloat(s)};
-const pctOf=(pct,done,total)=>!isNaN(pct)&&pct!=null?pct:(total>0?done/total*100:NaN);
+const r2=v=>Math.round(v*100)/100;  // a solved/assigned ratio keeps two decimals, e.g. 17 of 18 = 94.44
+const pctOf=(pct,done,total)=>!isNaN(pct)&&pct!=null?pct:(total>0?r2(done/total*100):NaN);
 const KEYS={pct:['نسبة','النسبة','%','٪','percent'],done:['محلول','المحلولة','منجز','المنجزة','المسلم','المسلمة','solved','done','completed'],
   total:['المسندة','مسند','إجمالي','اجمالي','الكلي','total','assigned','عدد الواجبات'],name:['اسم','الاسم','الطالبة','الطالب','name']};
 function mapHeader(row){const m={};const cells=row.map(c=>toLatin(c).toLowerCase());
@@ -538,7 +539,7 @@ function freeParse(txt){
     if(!nums.length){if(name)pending=name;continue}
     const who=name||pending;pending=null;if(!who)continue;
     let p;
-    if(nums.length>=2){const [a,b]=nums.slice(-2);p=(b>0&&a<=b&&!/[%٪]/.test(l))?a/b*100:nums.find(n=>n<=100)}
+    if(nums.length>=2){const [a,b]=nums.slice(-2);p=(b>0&&a<=b&&!/[%٪]/.test(l))?r2(a/b*100):nums.find(n=>n<=100)}
     else{p=nums[0];if(p>0&&p<=1&&String(p).includes('.'))p*=100}
     if(p!=null&&!isNaN(p))out.push(mk(who,p));
   }
